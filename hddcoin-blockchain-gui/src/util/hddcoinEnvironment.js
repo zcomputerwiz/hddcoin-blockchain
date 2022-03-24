@@ -1,6 +1,7 @@
 const path = require('path');
 const child_process = require('child_process');
 const fs = require('fs');
+const os = require('os');
 
 /*************************************************************
  * py process
@@ -125,6 +126,14 @@ const startHDDcoinDaemon = () => {
     pyProc.stderr.on('data', function (data) {
       //Here is where the error output goes
       process.stdout.write('stderr: ' + data.toString());
+    });
+
+    process.on('uncaughtException', function (err) {
+      process.stdout.write('Caught exception: ' + err);
+      var output = fs.createWriteStream(path.join(os.homedir(), '.hddcoin', 'mainnet', 'log/gui_stdout.log'));
+      var errorOutput = fs.createWriteStream(path.join(os.homedir(), '.hddcoin', 'mainnet', 'log/gui_stderr.log'));
+      var logger = new Console(output, errorOutput);
+      logger.error('Caught exception: ' + err);
     });
 
     pyProc.on('close', function (code) {
